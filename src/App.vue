@@ -1,22 +1,19 @@
 <template>
   <div id="app">
     <form>
-      <input type="text" v-model="title" >
-      <input type="text" v-model="body"  >
+      <input type="text" v-model="title" placeholder="Enter the title">
+      <input type="text" v-model="body" placeholder="Enter the body">
     </form>
-    <ul v-for="text in texts">
-      <li>{{text.title}} -- {{text.body}}</li>
-    </ul>
+      <h1>Title - {{texts.title}} </h1>
+      <h1>Body - {{texts.body}}</h1>
   </div>
 </template>
 
 <script>
-import Display from './components/display.vue';
 import db from './components/firebaseInit.js';
 export default {
   name: 'App',
   components:{
-    Display
   },
   data(){
     return{
@@ -31,13 +28,17 @@ export default {
     var oldBody = '';
     setInterval(()=>{
       if(self.title !== oldTitle || self.body !== oldBody ){
-             db.collection("text").add({
+             db.collection("text").doc('texty').set({
               title: self.title,
               body:self.body
             })
             .then(function(docRef) {
-              console.log("Document written with ID: ", docRef.id);
-            })
+               db.collection("text").get().then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                         self.texts = doc.data();
+                      });
+                  });
+              })
             .catch(function(error) {
               console.error("Error adding document: ", error);
             });
@@ -45,15 +46,9 @@ export default {
           oldTitle = self.title;
       }
     },5000)
-  } ,  
-  mounted(){
-      db.collection("text").get().then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-           this.texts.push(doc.data());
-      });
-       console.log(this.texts);
-  });
-}
+  } 
+     
+
 }
 </script>
 
